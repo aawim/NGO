@@ -8,8 +8,8 @@ use App\Http\Controllers\NewsStoryController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\PublicController;
+use App\Http\Controllers\UserController;
 use App\Http\Controllers\VolunteerController;
-// use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -43,8 +43,6 @@ Route::post('/contact', [App\Http\Controllers\PublicController::class, 'submitCo
 Route::get('/volunteer', [App\Http\Controllers\PublicController::class, 'volunteer'])->name('public.volunteer');
 Route::post('/volunteer', [App\Http\Controllers\PublicController::class, 'submitVolunteer'])->name('public.volunteer.submit');
 
-
-
 Route::get('/about', function () {
     return Inertia::render('Public/About');
 });
@@ -65,7 +63,7 @@ Route::get('/dashboard', function () {
 })->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::middleware('auth')->group(function () {
-     Route::get('/profile', [ProfileController::class, 'index'])->name('profile.index');
+    Route::get('/profile', [ProfileController::class, 'index'])->name('profile.index');
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
@@ -73,8 +71,8 @@ Route::middleware('auth')->group(function () {
 });
 
 // Group your admin routes
-Route::middleware(['auth','admin'])->prefix('admin')->name('admin.')->group(function () {
-    
+Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
+
     // This creates index, store, update, and destroy routes automatically
     Route::resource('projects', ProjectController::class)->except(['create', 'show', 'edit']);
     Route::resource('causes', CausesController::class)->except(['create', 'show', 'edit']);
@@ -83,23 +81,23 @@ Route::middleware(['auth','admin'])->prefix('admin')->name('admin.')->group(func
     Route::resource('news-stories', NewsStoryController::class)->except(['create', 'show', 'edit']);
     Route::get('/dashboard', [AdminController::class, 'index'])->name('dashboard');
 
-
     Route::get('/messages', [ContactController::class, 'index'])->name('admin.messages.index');
     Route::patch('/messages/{message}/status', [ContactController::class, 'updateStatus'])->name('admin.messages.status');
     Route::delete('/messages/{message}', [ContactController::class, 'destroy'])->name('admin.messages.destroy');
     Route::post('/messages/{message}/reply', [ContactController::class, 'reply'])->name('admin.messages.reply');
 
+    // User Management
+    Route::get('/users', [UserController::class, 'index'])->name('admin.users.index');
+    Route::patch('/users/{user}/role', [UserController::class, 'updateRole'])->name('admin.users.role');
+    Route::patch('/users/{user}/status', [UserController::class, 'updateStatus'])->name('admin.users.status');
+    Route::delete('/users/{user}', [UserController::class, 'destroy'])->name('admin.users.destroy');
 
+});
 
- });
- 
-
-Route::middleware(['auth'])->group(function () {  
+Route::middleware(['auth'])->group(function () {
     Route::post('/projects/{project}/comments', [App\Http\Controllers\CommentController::class, 'storeProjectComment'])->name('projects.comments.store');
     Route::post('/causes/{cause}/comments', [App\Http\Controllers\CommentController::class, 'storeCauseComment'])->name('causes.comments.store');
     Route::post('/events/{event}/comments', [App\Http\Controllers\CommentController::class, 'storeEventComment'])->name('events.comments.store');
 });
 
-
-
-require __DIR__.'/auth.php';
+require __DIR__ . '/auth.php';
