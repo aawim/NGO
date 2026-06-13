@@ -21,8 +21,9 @@ return new class extends Migration
                             'admin',
                             'staff',
                             'volunteer',
-                            'donor'
-                        ])->default('donor');
+                            'donor',
+                            'user'
+                        ])->default('user');
             $table->rememberToken();
             $table->timestamps();
         });

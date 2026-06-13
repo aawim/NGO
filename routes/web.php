@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\CausesController;
+use App\Http\Controllers\ContactController;
 use App\Http\Controllers\EventController;
 use App\Http\Controllers\NewsStoryController;
 use App\Http\Controllers\ProfileController;
@@ -34,6 +35,9 @@ Route::get('/events/{event}', [App\Http\Controllers\PublicController::class, 'sh
 Route::get('/news-stories', [App\Http\Controllers\PublicController::class, 'news'])->name('public.news');
 Route::get('/news-stories/{event}', [App\Http\Controllers\PublicController::class, 'showNews'])->name('public.showNews.show');
 
+Route::get('/contact', [App\Http\Controllers\PublicController::class, 'contact'])->name('public.contact');
+Route::post('/contact', [App\Http\Controllers\PublicController::class, 'submitContact'])->name('public.contact.submit');
+
 
 
 Route::get('/about', function () {
@@ -46,7 +50,6 @@ Route::get('/donate', function () {
 Route::get('/blog', function () {
     return Inertia::render('Public/Blog/Index');
 });
-
 
 Route::get('/volunteer', function () {
     return Inertia::render('Public/Volunteer');
@@ -64,7 +67,7 @@ Route::middleware('auth')->group(function () {
 });
 
 // Group your admin routes
-Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () {
+Route::middleware(['auth','admin'])->prefix('admin')->name('admin.')->group(function () {
     
     // This creates index, store, update, and destroy routes automatically
     Route::resource('projects', ProjectController::class)->except(['create', 'show', 'edit']);
@@ -72,10 +75,18 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
     Route::resource('events', EventController::class)->except(['create', 'show', 'edit']);
     Route::resource('volunteers', VolunteerController::class)->except(['create', 'show', 'edit']);
     Route::resource('news-stories', NewsStoryController::class)->except(['create', 'show', 'edit']);
-    Route::resource('dashboard', AdminController::class)->except(['create', 'show', 'edit']);
+    Route::get('/dashboard', [AdminController::class, 'index'])->name('dashboard');
 
-    Route::get('dashboard', [App\Http\Controllers\AdminController::class, 'index'])->name('admin.dashboard');
-});
+
+    Route::get('/messages', [ContactController::class, 'index'])->name('admin.messages.index');
+    Route::patch('/messages/{message}/status', [ContactController::class, 'updateStatus'])->name('admin.messages.status');
+    Route::delete('/messages/{message}', [ContactController::class, 'destroy'])->name('admin.messages.destroy');
+    Route::post('/messages/{message}/reply', [ContactController::class, 'reply'])->name('admin.messages.reply');
+
+
+
+ });
+ 
 
 Route::middleware(['auth'])->group(function () {  
     Route::post('/projects/{project}/comments', [App\Http\Controllers\CommentController::class, 'storeProjectComment'])->name('projects.comments.store');
