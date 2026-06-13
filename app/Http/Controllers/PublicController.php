@@ -3,9 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Models\Cause;
+use App\Models\Contact;
 use App\Models\Event;
 use App\Models\NewsStory;
 use App\Models\Project;
+use Illuminate\Http\Request;
 use Inertia\Inertia;
 
 class PublicController extends Controller
@@ -130,5 +132,38 @@ class PublicController extends Controller
         return Inertia::render('Public/NewsStories/NewsDetail', [
             'story' => $story
         ]);
+    }
+
+
+    public function contact()
+    {
+        return Inertia::render('Public/Contact');
+    }
+
+    public function submitContact(Request $request)
+    {
+        // 1. Validate the incoming data
+        $validated = $request->validate([
+            'name'         => 'required|string|max:255',
+            'email'        => 'required|email|max:255',
+            'phone'        => 'nullable|string|max:20',
+            'request_type' => 'required|string',
+            'message'      => 'required|string|max:2000',
+            // Simple honeypot/checkbox validation to stop basic bots
+            'bot_check'    => 'accepted' 
+        ]);
+
+        // 2. Save the message to the database
+        Contact::create([
+            'user_id'      => auth()->id(), // Will be null if guest
+            'name'         => $validated['name'],
+            'email'        => $validated['email'],
+            'phone'        => $validated['phone'],
+            'request_type' => $validated['request_type'],
+            'message'      => $validated['message'],
+        ]);
+
+        // 3. Return a success message
+        return back()->with('message', 'Thank you for reaching out! Your message has been sent successfully.');
     }
 }
